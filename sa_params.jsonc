@@ -1,0 +1,134 @@
+{
+    "use_csv": true,
+    // Format of droplet images
+    "img_format":".tif",
+    // 6.45/5 5x lens sweetnam fluorescent camera
+    "img_pixel_size": "1.816",  
+    // pixel size of intensity for concentration converter 
+    "cvt_pixel_size": "1.816",  
+    // depth of wells for the calibration not droplets
+    "cvt_depth": "100",
+    // image of droplets Directory
+    "img_dir":"./",
+    // Background images for droplet images
+    "bkg_dir": "./calibration",
+    // luminescence correction images folder
+    "lumi_dir":"./calibration",
+    // luminescence correction bkg images (noise) folder
+    "lumi_bkg_dir": "./calibration",
+    // dir of images for cvt, using the same bkgs in bkg_dir
+    "int_conc_cvt_dir": "./calibration",
+    // Channel names, in order. /calibration/546 647
+    "channels": ["488","647"],
+    // Channel name for detecting droplet shapes
+    "ch_detect": "647",
+    // Channel name for detecting features (condensates)
+    "ch_feature": "488",
+    // Channel name for uniform check (removing overlapping and smearing)
+    "ch_uniform": "647",
+    // bkg file names in bkg_dir. This is for droplet images. Same order as channels.
+    "bkg_names": ["500ms_bkg.tif", "500ms_bkg.tif"],
+    // luminescence correction images in lumi_dir. Same order as channels
+    "lumi_corr_img_names" : ["488_illum_bkg.tif", "647_illum_bkg_500ms.tif"],
+    // lumi corr background images in lumi_dir. Same order channels.
+    "lumi_corr_bkg_names" : ["500ms_bkg.tif", "500ms_bkg.tif"],
+
+    // File processing options
+    // Plot channels
+    "ch_plot" : [0, 1],
+    // Training channels for boundary fitting
+    "ch_train": [0, 1],
+    // use data after cvt for training
+    "train_on_cvt": true,
+
+    // Map the concentration in the cvt image names to some other values.
+    // List must be in the same length as the channels. If not needed, put None for the channel.
+    // Otherwise, put [concentration_in_cvt, new_value]
+    // Note this option is used by cvt_int_conc.py, which means the cvt.pickle file is not affected.
+    // It is not necessary to redo the cvt generation after changing this option
+    // "cvt_map" : [null, [6.4 100]],
+    "cvt_map" : {
+                    "dye" :       [ 6.76, 6.4,  6.25],  // barcode concentrations for channel 0, 1, 2 (fluorescent flows 1, 2, 3)
+                    "component" : [[6.76,  0,  0   ],   // Component 1 concentration for corresponding dye concentration
+                                   [150,  250,  100 ],  // Component 2 concentration for corresponding dye concentration
+                                   [0,     0,    0  ]], // Component 3 concentration for corresponding dye concentration
+                    "background": [0,            // Component 1 in buffer
+                                   300,          // Component 2 in buffer
+                                   400]           // Component 3 in buffer
+                },
+    // if set to false, masked regions of each circle not plotted
+    "verbose_plot": false,
+    "plot_text_scale" : 1,
+    "plot_line_thickness" : 1,
+    "parallel": true,
+    // Scan a number of stddev_tolerance settings. Scan only support process mode. Only use process mode when scan_enabled set to true
+    "stddev_scan": {
+        "scan_enabled" : false,
+        "stddev_min": 4,
+        "stddev_max": 9,
+        "scan_num": 24
+    },
+
+    // Analyser
+    "analyser": "SphereAnalyser5",
+    // kwargs for optional analyser settings
+    "kwargs": {
+        // minimum radius in px
+        "min_size": 15,
+        // maximum radius in px. Note this has an effect on detection
+        "max_size": 45,
+        // limit min size, mean minus min_size * standard deviation
+        "min_size_stddev":3,
+        // limit max size, mean plus max_size * standard deviation
+        "max_size_stddev":3,
+        // cut cut_size * radius of detected circle for uneven detection (uniform and feature check)
+        "cut_side": 0,
+        // cut cut_centre * radius of detected circle for uneven detection. If cut_centre > 1, cut_centre is in px
+        "cut_centre": 0,
+        // ignore a number of the brightest pixels for uneven detection
+        "ignore_bright_pixels": 5,
+        // remove dark droplets for correct detection, in intensity per unit pixel area. Those below this value will be
+        // labelled as dark [channels] e.g., [488,647]
+        // remove dark droplets for correct detection, in intensity per unit pixel area. Those below this value will be
+        // labelled as dark
+        "dark_thresholds": [100,100],
+        // how much deviates from the sphere setting. 1 means 100% deviation from the fitted sphere model
+        "uneven_threshold": 0.05,
+        // how much pixel can deviates from the background for condensate check. Deprecated for v5
+        "stddev_tolerance": 3,
+        // Below for v5 only
+        // feature threshold (for intensity thresholding)
+        "feature_threshold": 5,
+        // number of padding pixels for convolution
+        "feature_padding_pixels":5,
+        // percentage of brightness below which the pixels will be ignored in padding processed (replaced by padding)
+        "feature_padding_threshold":20,
+        // Sigma value for bilateral filtering
+        "feature_smooth_sigma":11,
+        // Minimum of connected pixels to be regarded as feature
+        "feature_connected_pixels":2,
+        // Minimum number of clusters in a droplet to be considered as feature
+        "feature_min_cluster_num": 1,
+        // enhancement mode 1: the conventional method adapted for the CoH microscope, 2: adapted for high
+        // signal-noise ratio camera
+        "enhance_mode": 1,
+    },
+
+
+
+    // Configs for intensity concentration conversion
+    "cvt_kwargs": {
+        // If there is no zero concentration, padding zero concentration and zero intensity
+        "padding_zero": false,
+        // Use linear mode, instead of inter- and extrapolation
+        "linear": true,
+        // Fix zero concentration if it exists
+        "fix_zero": true,
+        // Suppress warning for not finding corresponding background
+        "suppress_no_bkg_warning": false,
+        // Background suffix for individual background searching
+        "bg_suffix":"_bkg"
+    }
+
+
+}
